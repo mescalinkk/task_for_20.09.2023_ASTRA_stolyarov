@@ -1,0 +1,36 @@
+// здравствуйте! вот мой код . работал в qtcreator 
+
+#include <QtWidgets>
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    // модель файловой сист.
+    QFileSystemModel* model = new QFileSystemModel();
+    model->setRootPath(QDir::homePath()); // начальная папка - домашняя папка текущего пользователя
+    model->setFilter(QDir::AllEntries | QDir::Hidden);
+
+    // qtreeview
+    QTreeView treeView;
+    treeView.setModel(model);
+    treeView.setRootIndex(model->index(QDir::homePath())); // корневой индекс - homePath()
+    treeView.setSortingEnabled(true); // включаем сортировку
+
+    // qlineedit (фильтр)
+    QLineEdit filterLineEdit;
+    QObject::connect(&filterLineEdit, &QLineEdit::textChanged, [&model](const QString &text) {
+        QRegExp regex(text, Qt::CaseInsensitive, QRegExp::WildcardUnix);
+        model->setNameFilters(QStringList() << regex.pattern()); // фильтруем по имени
+        model->setNameFilterDisables(false); // включаем фильтр
+    });
+
+    // осн окно
+    QWidget mainWindow;
+    QVBoxLayout layout(&mainWindow);
+    layout.addWidget(&filterLineEdit);
+    layout.addWidget(&treeView);
+    mainWindow.setMinimumSize(800, 600);
+    mainWindow.show();
+
+    return app.exec();
+}
